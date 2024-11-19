@@ -1,0 +1,543 @@
+
+<html><head><base href="." />
+    <title>C3 Investing - Plataforma de Investimentos</title>
+    <meta charset="UTF-8">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: 'Arial', sans-serif;
+      }
+    
+      body {
+        background: #f0f2f5;
+      }
+    
+      .login-container {
+        width: 100%;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)),
+                    url('https://images.unsplash.com/photo-1522083165195-3424ed129620?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2670&q=80'); /* Aerial view of NYC */
+        background-size: cover;
+        background-position: center;
+      }
+    
+      .login-box {
+        background: rgba(255, 255, 255, 0.97);
+        padding: 40px;
+        border-radius: 10px;
+        box-shadow: 0 0 30px rgba(0,0,0,0.3);
+        width: 400px;
+        backdrop-filter: blur(10px);
+      }
+    
+      .logo {
+        text-align: center;
+        margin-bottom: 30px;
+        color: #1e3c72;
+        font-size: 32px;
+        font-weight: bold;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+      }
+    
+      .input-group {
+        margin-bottom: 20px;
+      }
+    
+      input {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        margin-top: 5px;
+      }
+    
+      button {
+        width: 100%;
+        padding: 12px;
+        background: #1e3c72;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: 0.3s;
+      }
+    
+      button:hover {
+        background: #2a5298;
+      }
+    
+      .dashboard {
+        display: none;
+        padding: 20px;
+      }
+    
+      .navbar {
+        background: #1e3c72;
+        padding: 15px;
+        color: white;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+    
+      .main-content {
+        padding: 20px;
+      }
+    
+      .card {
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      }
+    
+      .card canvas {
+        max-height: 300px !important; /* Makes charts smaller */
+        width: 100% !important;
+      }
+    
+      .client-list {
+        width: 100%;
+        border-collapse: collapse;
+      }
+    
+      .client-list th, .client-list td {
+        padding: 12px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+      }
+    
+      .action-btn {
+        padding: 5px 10px;
+        margin: 2px;
+        border-radius: 3px;
+        cursor: pointer;
+      }
+    
+      .edit-btn {
+        background: #4CAF50;
+        color: white;
+      }
+    
+      .delete-btn {
+        background: #f44336;
+        color: white;
+      }
+    
+      .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+      }
+    
+      .modal-content {
+        background: white;
+        padding: 20px;
+        width: 500px;
+        margin: 100px auto;
+        border-radius: 10px;
+      }
+    
+      #changePasswordModal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+      }
+    
+      #changePasswordModal .modal-content {
+        background: white;
+        padding: 20px;
+        width: 400px;
+        margin: 100px auto;
+        border-radius: 10px;
+      }
+    </style>
+    </head>
+    <body>
+    
+    <div class="login-container" id="loginScreen">
+      <div class="login-box">
+        <div class="logo">C3 Investing</div>
+        <div class="input-group">
+          <input type="email" id="loginEmail" placeholder="Email">
+        </div>
+        <div class="input-group">
+          <input type="password" id="loginPassword" placeholder="Senha">
+        </div>
+        <button onclick="login()">Entrar</button>
+      </div>
+    </div>
+    
+    <div class="dashboard" id="adminDashboard">
+      <div class="navbar">
+        <div>C3 Investing - Administrador</div>
+        <button onclick="logout()">Sair</button>
+      </div>
+      
+      <div class="main-content">
+        <div class="card">
+          <h2>Rendimento Geral</h2>
+          <canvas id="generalChart"></canvas>
+        </div>
+    
+        <div class="card">
+          <h2>Gerenciar Clientes</h2>
+          <button onclick="showNewClientModal()">Novo Cliente</button>
+          <table class="client-list">
+            <thead>
+              <tr>
+                <th>Nome</th>
+                <th>Email</th>
+                <th>Telefone</th>
+                <th>Data de Início</th>
+                <th>Valor Investido</th>
+                <th>Rentabilidade</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="clientListBody">
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    
+    <div class="dashboard" id="clientDashboard">
+      <div class="navbar">
+        <div>C3 Investing - Cliente</div>
+        <button onclick="logout()">Sair</button>
+      </div>
+      
+      <div class="main-content">
+        <div class="card">
+          <h2>Seu Investimento</h2>
+          <div id="clientInfo"></div>
+          <button onclick="showChangePasswordModal()">Alterar Senha</button>
+        </div>
+        
+        <div class="card">
+          <h2>Evolução do Investimento</h2>
+          <canvas id="clientChart"></canvas>
+        </div>
+      </div>
+    </div>
+    
+    <div class="modal" id="newClientModal">
+      <div class="modal-content">
+        <h2>Novo Cliente</h2>
+        <div class="input-group">
+          <input type="text" id="newName" placeholder="Nome">
+        </div>
+        <div class="input-group">
+          <input type="email" id="newEmail" placeholder="Email">
+        </div>
+        <div class="input-group">
+          <input type="tel" id="newPhone" placeholder="Telefone">
+        </div>
+        <div class="input-group">
+          <input type="text" id="newAddress" placeholder="Endereço">
+        </div>
+        <div class="input-group">
+          <input type="date" id="newStartDate" placeholder="Data de Início">
+        </div>
+        <div class="input-group">
+          <input type="number" id="newInvestment" placeholder="Valor Investido">
+        </div>
+        <div class="input-group">
+          <input type="number" id="newReturn" placeholder="Rentabilidade (%)">
+        </div>
+        <div class="input-group">
+          <input type="password" id="newPassword" placeholder="Senha">
+        </div>
+        <button onclick="saveNewClient()">Salvar</button>
+        <button onclick="closeModal('newClientModal')">Cancelar</button>
+      </div>
+    </div>
+    
+    <div class="modal" id="changePasswordModal">
+      <div class="modal-content">
+        <h2>Alterar Senha</h2>
+        <div class="input-group">
+          <input type="password" id="currentPassword" placeholder="Senha Atual">
+        </div>
+        <div class="input-group">
+          <input type="password" id="newClientPassword" placeholder="Nova Senha">
+        </div>
+        <div class="input-group">
+          <input type="password" id="confirmNewPassword" placeholder="Confirmar Nova Senha">
+        </div>
+        <button onclick="changePassword()">Salvar</button>
+        <button onclick="closeModal('changePasswordModal')">Cancelar</button>
+      </div>
+    </div>
+    
+    <script>
+    const adminCredentials = {
+      email: 'Investing@2024',
+      password: '04271611'
+    };
+    
+    let clients = [];
+    let currentUser = null;
+    
+    function login() {
+      const email = document.getElementById('loginEmail').value;
+      const password = document.getElementById('loginPassword').value;
+    
+      if (email === adminCredentials.email && password === adminCredentials.password) {
+        document.getElementById('loginScreen').style.display = 'none';
+        document.getElementById('adminDashboard').style.display = 'block';
+        loadAdminDashboard();
+      } else {
+        const client = clients.find(c => c.email === email && c.password === password);
+        if (client) {
+          currentUser = client;
+          document.getElementById('loginScreen').style.display = 'none';
+          document.getElementById('clientDashboard').style.display = 'block';
+          loadClientDashboard(client);
+        } else {
+          alert('Credenciais inválidas!');
+        }
+      }
+    }
+    
+    function logout() {
+      document.getElementById('loginScreen').style.display = 'flex';
+      document.getElementById('adminDashboard').style.display = 'none';
+      document.getElementById('clientDashboard').style.display = 'none';
+      document.getElementById('loginEmail').value = '';
+      document.getElementById('loginPassword').value = '';
+      currentUser = null;
+    }
+    
+    function loadAdminDashboard() {
+      updateClientList();
+      createGeneralChart();
+    }
+    
+    function loadClientDashboard(client) {
+      const profit = client.investment * (client.return / 100);
+      document.getElementById('clientInfo').innerHTML = `
+        <p><strong>Nome:</strong> ${client.name}</p>
+        <p><strong>Valor Investido:</strong> R$ ${client.investment.toFixed(2)}</p>
+        <p><strong>Lucro:</strong> R$ ${profit.toFixed(2)}</p>
+        <p><strong>Rentabilidade:</strong> ${client.return}%</p>
+      `;
+      createClientChart(client);
+    }
+    
+    function createGeneralChart() {
+      const ctx = document.getElementById('generalChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun'],
+          datasets: [{
+            label: 'Rentabilidade Geral',
+            data: [10, 12, 15, 14, 16, 18],
+            borderColor: '#1e3c72',
+            tension: 0.1
+          }]
+        }
+      });
+    }
+    
+    function createClientChart(client) {
+      const ctx = document.getElementById('clientChart').getContext('2d');
+      
+      const labels = [];
+      const data = [];
+      const startDate = new Date(client.startDate);
+      
+      for(let i = 0; i < 6; i++) {
+        const date = new Date(startDate);
+        date.setMonth(date.getMonth() + i);
+        labels.push(date.toLocaleDateString('pt-BR', {month: 'short', year: 'numeric'}));
+        
+        const months = i + 1;
+        const value = client.investment * Math.pow(1 + client.return/100, months);
+        data.push(value);
+      }
+    
+      new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Evolução do Investimento',
+            data: data,
+            borderColor: '#1e3c72',
+            tension: 0.1
+          }]
+        }
+      });
+    }
+    
+    function updateClientList() {
+      const tbody = document.getElementById('clientListBody');
+      tbody.innerHTML = '';
+      
+      clients.forEach((client, index) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${client.name}</td>
+          <td>${client.email}</td>
+          <td>${client.phone}</td>
+          <td>${new Date(client.startDate).toLocaleDateString('pt-BR')}</td>
+          <td>R$ ${client.investment.toFixed(2)}</td>
+          <td>${client.return}%</td>
+          <td>
+            <button class="action-btn edit-btn" onclick="editClient(${index})">Editar</button>
+            <button class="action-btn delete-btn" onclick="deleteClient(${index})">Excluir</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+    
+    function showNewClientModal() {
+      document.getElementById('newClientModal').style.display = 'block';
+    }
+    
+    function closeModal(modalId) {
+      document.getElementById(modalId).style.display = 'none';
+    }
+    
+    function saveNewClient() {
+      const editIndex = document.getElementById('newClientModal').dataset.editIndex;
+      const clientData = {
+        name: document.getElementById('newName').value,
+        email: document.getElementById('newEmail').value,
+        phone: document.getElementById('newPhone').value,
+        address: document.getElementById('newAddress').value,
+        startDate: document.getElementById('newStartDate').value,
+        investment: parseFloat(document.getElementById('newInvestment').value),
+        return: parseFloat(document.getElementById('newReturn').value),
+        password: document.getElementById('newPassword').value
+      };
+    
+      if (editIndex !== undefined) {
+        clients[editIndex] = clientData;
+        if (currentUser && currentUser.email === clientData.email) {
+          currentUser = clientData;
+          loadClientDashboard(currentUser);
+        }
+        delete document.getElementById('newClientModal').dataset.editIndex;
+      } else {
+        clients.push(clientData);
+      }
+    
+      // Save to localStorage
+      localStorage.setItem('c3clients', JSON.stringify(clients));
+      
+      updateClientList();
+      closeModal('newClientModal');
+      
+      // Clear form
+      document.getElementById('newName').value = '';
+      document.getElementById('newEmail').value = '';
+      document.getElementById('newPhone').value = '';
+      document.getElementById('newAddress').value = '';
+      document.getElementById('newStartDate').value = '';
+      document.getElementById('newInvestment').value = '';
+      document.getElementById('newReturn').value = '';
+      document.getElementById('newPassword').value = '';
+    }
+    
+    function deleteClient(index) {
+      if (confirm('Tem certeza que deseja excluir este cliente?')) {
+        clients.splice(index, 1);
+        localStorage.setItem('c3clients', JSON.stringify(clients));
+        updateClientList();
+      }
+    }
+    
+    function showChangePasswordModal() {
+      document.getElementById('changePasswordModal').style.display = 'block';
+    }
+    
+    function changePassword() {
+      const currentPassword = document.getElementById('currentPassword').value;
+      const newPassword = document.getElementById('newClientPassword').value;
+      const confirmPassword = document.getElementById('confirmNewPassword').value;
+    
+      if (currentPassword !== currentUser.password) {
+        alert('Senha atual incorreta!');
+        return;
+      }
+    
+      if (newPassword !== confirmPassword) {
+        alert('As novas senhas não coincidem!');
+        return;
+      }
+    
+      const clientIndex = clients.findIndex(c => c.email === currentUser.email);
+      if (clientIndex !== -1) {
+        clients[clientIndex].password = newPassword;
+        currentUser.password = newPassword;
+        localStorage.setItem('c3clients', JSON.stringify(clients));
+        alert('Senha alterada com sucesso!');
+        closeModal('changePasswordModal');
+        document.getElementById('currentPassword').value = '';
+        document.getElementById('newClientPassword').value = '';
+        document.getElementById('confirmNewPassword').value = '';
+      }
+    }
+    
+    function editClient(index) {
+      const client = clients[index];
+      document.getElementById('newName').value = client.name;
+      document.getElementById('newEmail').value = client.email;
+      document.getElementById('newPhone').value = client.phone;
+      document.getElementById('newAddress').value = client.address;
+      document.getElementById('newStartDate').value = client.startDate;
+      document.getElementById('newInvestment').value = client.investment;
+      document.getElementById('newReturn').value = client.return;
+      document.getElementById('newPassword').value = client.password;
+      
+      document.getElementById('newClientModal').dataset.editIndex = index;
+      
+      showNewClientModal();
+    }
+    
+    // Inicialização
+    document.addEventListener('DOMContentLoaded', () => {
+      // Load clients from localStorage or use default if none exists
+      const savedClients = localStorage.getItem('c3clients');
+      if (savedClients) {
+        clients = JSON.parse(savedClients);
+      } else {
+        clients = [
+          {
+            name: 'João Silva',
+            email: 'joao@email.com',
+            phone: '(11) 99999-9999',
+            address: 'Rua Exemplo, 123',
+            startDate: '2024-01-01',
+            investment: 10000,
+            return: 12,
+            password: '123456'
+          }
+        ];
+        localStorage.setItem('c3clients', JSON.stringify(clients));
+      }
+    });
+    </script>
+    </body>
+    </html>
